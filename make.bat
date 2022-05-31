@@ -1,0 +1,1 @@
+C:\Users\Дом\PycharmProjects\RollingCubes\venv\Scripts\pyinstaller main.py -n RollingPyramids.exe -i RollingPyramids.ico --onefile --noconsole --upx-dir C:\Users\Дом\PycharmProjects\UPX
