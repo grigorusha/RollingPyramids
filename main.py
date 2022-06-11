@@ -18,7 +18,7 @@ SIZE_X = SIZE_X_START
 SIZE_Y = SIZE_Y_START
 
 BORDER = 5
-PANEL = 100
+PANEL = 33*4
 
 TG60 = math.sqrt(3)
 TG30 = TG60/3
@@ -31,7 +31,8 @@ HEIGHT_PYRAMIDka = int((EDGE_PYRAMID*TG60/2)-BORDER*3)
 BACKGROUND_COLOR = "#000000"
 GRAY_COLOR = "#808080"
 GRAY_COLOR2 = "#C0CCB0"
-PYRAMID_COLOR = [("W","#FFFFFF"),("B","#0000FF"),("G","#008000"),("R","#FF0000")]
+RED_COLOR = "#FF0000"
+PYRAMID_COLOR = [("W","#FFFFFF"),("B","#0000FF"),("G","#008000"),("R","#800080")] # "R","#FF0000"
 
 PYRAMID_STATE = [["WB","GR"],["WG","RB"],["WR","BG"],
                  ["BW","RG"],["BG","WR"],["BR","GW"],
@@ -114,20 +115,9 @@ def button_Type_click():
     BTN_CLICK_STR = "type"
     BTN_CLICK = True
 
-def button_Color_click():
-    global TYPE_COLOR, BTN_CLICK, BTN_CLICK_STR
-    # TYPE_COLOR = 3-TYPE_COLOR
-    BTN_CLICK_STR = "color"
-    BTN_CLICK = True
-
-def button_Reset_click():
+def button_Button_click(button_str):
     global BTN_CLICK, BTN_CLICK_STR
-    BTN_CLICK_STR = "reset"
-    BTN_CLICK = True
-
-def button_Scramble_click():
-    global BTN_CLICK, BTN_CLICK_STR
-    BTN_CLICK_STR = "scramble"
+    BTN_CLICK_STR = button_str
     BTN_CLICK = True
 
 def button_Edit_click(but):
@@ -172,8 +162,11 @@ def main():
     timer = pygame.time.Clock()
     Tk().withdraw()
 
-    dir = os.path.abspath(os.curdir)
-    icon = pygame.image.load(dir + '\RollingPyramids.ico')
+    # dir = os.path.abspath(os.curdir)
+    # dir = os.path.abspath(__file__)
+    # dir = os.path.abspath(os.getcwd())
+    # icon = pygame.image.load(dir + '\RollingPyramids.ico')
+    # pygame.display.set_icon(icon)
 
     ################################################################################
     ################################################################################
@@ -188,10 +181,13 @@ def main():
         edit_mode_str = ""
         scramble_move = 0
 
+        moves_stack = []
+        moves = 0
+        solved = True
+
         # инициализация окна
         screen = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT+PANEL))  # Создаем окошко
         pygame.display.set_caption("Rolling Pyramids")  # Пишем в шапку
-        pygame.display.set_icon(icon)
 
         screen.fill(BACKGROUND_COLOR) # Заливаем поверхность сплошным цветом
 
@@ -199,12 +195,13 @@ def main():
         button_y1 = WIN_HEIGHT + BORDER + 10
         button_Reset = Button(screen, 10, button_y1, 45, 20, text='Reset', fontSize=20, margin=5, radius=3,
                         inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick = lambda: button_Reset_click())
+                        onClick = lambda: button_Button_click("reset"))
         button_Scramble = Button(screen, button_Reset.textRect.right+10, button_y1, 70, 20, text='Scramble', fontSize=20, margin=5, radius=3,
                         inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick = lambda: button_Scramble_click())
+                        onClick = lambda: button_Button_click("scramble"))
         button_Undo = Button(screen, button_Scramble.textRect.right+10, button_y1, 40, 20, text='Undo', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20))
+                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                        onClick = lambda: button_Button_click("undo"))
 
         button_y2 = button_y1 + 30
         button_Type = Button(screen, 10, button_y2, 60, 20, text='Type: Δ', fontSize=20, margin=5, radius=3,
@@ -231,7 +228,7 @@ def main():
         button_y3 = button_y2 + 30
         button_Color = Button(screen, 10, button_y3, 65, 20, text='Color: Δ', fontSize=20, margin=5, radius=3,
                         inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Color_click())
+                        onClick=lambda: button_Button_click("color"))
         button_Edit = Button(screen, button_Color.textRect.right+15, button_y3, 50, 20, text='Edit', fontSize=20, margin=5, radius=3,
                         inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                         onClick=lambda: button_Edit_click(0))
@@ -245,19 +242,18 @@ def main():
                         inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                         onClick=lambda: button_Edit_click(3))
 
+        button_y4 = button_y3 + 30
         button_set = [button_Reset, button_Scramble, button_Undo, button_Type, button_Color, button_Edit,
                       button_MinusX, button_PlusX, button_MinusY, button_PlusY, button_EditPyr, button_EditBlk, button_EditEmp]
 
         ################################################################################
         ################################################################################
         # Основной цикл программы
-
         while True:
-
             mouse_x = mouse_y = 0
             pyramid_pos_x = pyramid_pos_y = -1
+            undo = False
 
-            ################################################################################
             ################################################################################
             # обработка событий
             if scramble_move == 0:
@@ -270,6 +266,9 @@ def main():
                     if ev.type == MOUSEBUTTONDOWN and ev.button == 1:
                         mouse_x = ev.pos[0]
                         mouse_y = ev.pos[1]
+                    if ev.type == MOUSEBUTTONDOWN and ev.button == 5:
+                        BTN_CLICK = True
+                        BTN_CLICK_STR = "undo"
 
                 ################################################################################
                 # обработка нажатия на кнопки
@@ -279,7 +278,17 @@ def main():
                         fl_break = True
                     if BTN_CLICK_STR=="scramble":
                         fl_break = False
-                        scramble_move = SIZE_X * SIZE_Y * 2000
+                        scramble_move = SIZE_X * SIZE_Y * 1000
+                    if BTN_CLICK_STR=="undo":
+                        fl_break = False
+                        if len(moves_stack) > 0:
+                            vek,pyramid_pos_y,pyramid_pos_x = moves_stack.pop()
+                            vek = (vek + 1) % 4 + 1
+                            moves -= 1
+                            undo = True
+                    if BTN_CLICK_STR=="color":
+                        fl_break = False
+                        TYPE_COLOR = 3-TYPE_COLOR
                     if BTN_CLICK_STR=="minusy":
                         pos = pygame.mouse.get_pos()
                         pygame.mouse.set_pos(pos[0], pos[1] - HEIGHT_PYRAMID)
@@ -419,10 +428,14 @@ def main():
                         level[pyram_empty[0][0]][pyram_empty[0][1]] = pyram_new
                         level[pyramid_pos_y][pyramid_pos_x] = [" "," "]
 
+                        if not undo:
+                            moves += 1
+                            moves_stack.append([vek,pyram_empty[0][0],pyram_empty[0][1]])
+
             if scramble_move != 0:
                 scramble_move -= 1
-                #moves_stack = []
-                #moves = 0
+                moves_stack = []
+                moves = 0
                 continue
                 # отрисовка не нужна
 
@@ -435,6 +448,18 @@ def main():
             pf = Surface((WIN_WIDTH, BORDER))
             pf.fill(Color("#B88800"))
             screen.blit(pf, (0, WIN_HEIGHT + BORDER))
+
+            ################################################################################
+            # text
+            text_moves = font.render('Moves: ' + str(moves), True, PYRAMID_COLOR[2][1])
+            text_moves_place = text_moves.get_rect(topleft=(10, button_y4))
+            screen.blit(text_moves, text_moves_place)
+            if solved:
+                text_solved = font.render('Solved', True, PYRAMID_COLOR[0][1])
+            else:
+                text_solved = font.render('not solved', True, RED_COLOR)
+            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y4))
+            screen.blit(text_solved, text_solved_place)
 
             # отрисовка сетки
             if (TYPE_ORIENT==1):
@@ -462,6 +487,8 @@ def main():
 
             ############################################
             # отрисовка пирамидок
+            solved = True
+
             for ny,row in enumerate(level):
                 for nx,pyramid in enumerate(row):
                     ############################################
@@ -515,9 +542,13 @@ def main():
                         draw.line(screen, GRAY_COLOR, [x1-delta2, y0+delta/2], [x1+delta2, y0-delta/2],3)
 
                     else: # пирамидка
+                        if (pyramid[0]!="W")or(pyramid[1]!="B"):
+                            solved = False
+
                         orient = (ny % 2 == 0) == (nx % 2 == 0) # уголок вверх
                         pyramid2 = pyram_rotate(pyramid, 0, orient)
                         for color in PYRAMID_COLOR:
+                            #if TYPE_COLOR == 1:
                             if pyramid[1]==color[0]:
                                 draw.polygon(screen,color[1], [[x1, y0], [x2, yy], [x3, yy]] )
                                 draw.aaline(screen, color[1], [x1, y0], [x2, yy])
@@ -530,6 +561,7 @@ def main():
                                 draw.polygon(screen,color[1], [[x1, y0], [x1, y1], [x2, yy]] )
                                 draw.aaline(screen, color[1], [x1, y0], [x2, yy])
                                 draw.aaline(screen, color[1], [x1, y1], [x2, yy])
+                            # else:
 
             #####################################################################################
             pygame_widgets.update(events)
