@@ -6,6 +6,7 @@ from pygame_widgets.button import Button
 
 import random
 import math
+import copy
 
 from tkinter import Tk
 from tkinter import filedialog as fd
@@ -40,6 +41,7 @@ PYRAMID_STATE = [["WB","GR"],["WG","RB"],["WR","BG"],
                  ["RB","WG"],["RW","GB"],["RG","BW"]]
 
 level = []
+solved_level = []
 TYPE_COLOR  = 1  # 1 - грани, 2 - углы
 
 BTN_CLICK = False
@@ -119,11 +121,13 @@ def init_level(y,x):
                             col = "B"
                 str.append(["W", col])
         level.append(str)
+    solved_level = copy.deepcopy(level)
+
     ny = y // 2
     nx = x // 2
     level[ny][nx] = [" "," "]
 
-    return level
+    return level,solved_level
 
 def button_Button_click(button_str):
     global BTN_CLICK, BTN_CLICK_STR
@@ -227,8 +231,9 @@ def main():
 
         if file_ext:
             file_ext = False
+            solved_level = []
         else:
-            level = init_level(SIZE_Y, SIZE_X)
+            level,solved_level = init_level(SIZE_Y, SIZE_X)
         edit_mode = False
         edit_mode_str = ""
         scramble_move = 0
@@ -484,7 +489,8 @@ def main():
             # режим редактора
             if edit_mode and len(edit_mode_str)>0 and (pyramid_pos_x>=0) and (pyramid_pos_y>=0):
                 if edit_mode_str=="pyram":
-                    level[pyramid_pos_y][pyramid_pos_x] = ["W","B"]
+                    sol_pyram = solved_level[pyramid_pos_y][pyramid_pos_x]
+                    level[pyramid_pos_y][pyramid_pos_x] = [sol_pyram[0],sol_pyram[1]]
                 if edit_mode_str=="block":
                     level[pyramid_pos_y][pyramid_pos_x] = ["X","X"]
                 if edit_mode_str=="empty":
@@ -526,6 +532,18 @@ def main():
                 continue
                 # отрисовка не нужна
 
+            # проверка на решенное состояние
+            solved = True
+            if not edit_mode:
+                #TYPE_COLOR
+                if len(solved_level) > 0:
+                    for ny, row in enumerate(level):
+                        for nx, pyramid in enumerate(row):
+                            if (pyramid[0]!="X") and (pyramid[0]!=" "):
+                                sol_pyram = solved_level[ny][nx]
+                                if (pyramid[0]!=sol_pyram[0]) or (pyramid[1]!=sol_pyram[1]):
+                                    solved = False
+
             ################################################################################
             ################################################################################
             # отрисовка игрового поля
@@ -552,8 +570,6 @@ def main():
 
             ############################################
             # отрисовка сетки и пирамидок
-            solved = True
-
             for ny,row in enumerate(level):
                 for nx,pyramid in enumerate(row):
                     orient = (ny % 2 == 0) == (nx % 2 == 0) # уголок вверх
@@ -618,9 +634,6 @@ def main():
                         draw.line(screen, GRAY_COLOR, [x1 - delta2, y0 + delta / 2], [x1 + delta2, y0 - delta / 2], 3)
 
                     else: # пирамидка
-                        if (pyramid[0]!="W")or(pyramid[1]!="B"):
-                            solved = False
-
                         pyramid2 = pyram_rotate(pyramid, 0, orient)
                         for color in PYRAMID_COLOR:
                             if TYPE_COLOR == 1:
