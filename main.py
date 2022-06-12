@@ -18,7 +18,7 @@ SIZE_X = SIZE_X_START
 SIZE_Y = SIZE_Y_START
 
 BORDER = 5
-PANEL = 33*4
+PANEL = 33*5
 
 TG60 = math.sqrt(3)
 TG30 = TG60/3
@@ -165,12 +165,51 @@ def button_Size_click(y,x):
         BTN_CLICK_STR = "plusy"
     BTN_CLICK = True
 
+def read_file():
+    dir = os.path.abspath(os.curdir)
+    filetypes = (("Text file", "*.txt"),("Any file", "*"))
+    filename = fd.askopenfilename(title="Open Level", initialdir=dir,filetypes=filetypes)
+    if filename=="":
+        return ""
+
+    x = y = 0
+    level = []
+    with open(filename,'r') as f:
+        lines = f.readlines()
+        for str in lines:
+            str_mas = []
+            str = str.replace('\n','')
+            while len(str)>=2:
+                sim1 = str[0]
+                sim2 = str[1]
+                str = str[3:]
+                str_mas.append([sim1,sim2])
+            level.append(str_mas)
+            y += 1
+            x = max(x,len(str_mas))
+    return level, y, x
+
+def save_file(level):
+    dir = os.path.abspath(os.curdir)
+    filetypes = (("Text file", "*.txt"),("Any file", "*"))
+    filename = fd.asksaveasfile("w", title="Save Level as...", initialdir=dir,filetypes=filetypes)
+    if filename==None:
+        return ""
+
+    with open(filename.name, 'w') as f:
+        for str in level:
+            line = ""
+            for pyr in str:
+                line += pyr[0]+pyr[1]+" "
+            f.write(line+"\n")
+
 def main():
     global SIZE_X,SIZE_Y,BTN_CLICK,BTN_CLICK_STR,TYPE_COLOR
 
     # основные константы
     SIZE_X = SIZE_X_START
     SIZE_Y = SIZE_Y_START
+    file_ext = False
 
     # основная инициализация
     random.seed()
@@ -193,7 +232,10 @@ def main():
         WIN_WIDTH = int(EDGE_PYRAMID * (SIZE_X/2+0.5))+BORDER*2  # Ширина создаваемого окна
         WIN_HEIGHT = SIZE_Y * HEIGHT_PYRAMID+BORDER*2  # Высота
 
-        level = init_level(SIZE_Y, SIZE_X)
+        if file_ext:
+            file_ext = False
+        else:
+            level = init_level(SIZE_Y, SIZE_X)
         edit_mode = False
         edit_mode_str = ""
         scramble_move = 0
@@ -261,7 +303,16 @@ def main():
                         onClick=lambda: button_Edit_click(3))
 
         button_y4 = button_y3 + 30
-        button_set = [button_Reset, button_Scramble, button_Undo, button_Type, button_Color, button_Edit,
+        button_Open = Button(screen, 10, button_y4, 45, 20, text='Open', fontSize=20, margin=5, radius=3,
+                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                        onClick=lambda: button_Button_click("open"))
+        button_Save = Button(screen, button_Open.textRect.right+10, button_y4, 45, 20, text='Save', fontSize=20, margin=5, radius=3,
+                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                        onClick=lambda: button_Button_click("save"))
+
+
+        button_y5 = button_y4 + 30
+        button_set = [button_Reset, button_Scramble, button_Undo, button_Type, button_Color, button_Edit, button_Open, button_Save,
                       button_MinusX, button_PlusX, button_MinusY, button_PlusY, button_EditPyr, button_EditBlk, button_EditEmp]
 
         ################################################################################
@@ -294,6 +345,15 @@ def main():
                     fl_break = True
                     if BTN_CLICK_STR=="reset":
                         fl_break = True
+                    if BTN_CLICK_STR=="open":
+                        fl_break = True
+                        fil = read_file()
+                        if fil != "":
+                            level, SIZE_Y, SIZE_X = fil
+                            file_ext = True
+                    if BTN_CLICK_STR=="save":
+                        fl_break = False
+                        save_file(level)
                     if BTN_CLICK_STR=="scramble":
                         fl_break = False
                         scramble_move = SIZE_X * SIZE_Y * 500
@@ -510,7 +570,7 @@ def main():
             ################################################################################
             # text
             text_moves = font.render('Moves: ' + str(moves), True, PYRAMID_COLOR[2][1])
-            text_moves_place = text_moves.get_rect(topleft=(10, button_y4))
+            text_moves_place = text_moves.get_rect(topleft=(10, button_y5))
             screen.blit(text_moves, text_moves_place)
             if solved:
                 text_solved = font.render('Solved', True, PYRAMID_COLOR[0][1])
@@ -518,7 +578,7 @@ def main():
                 text_solved = font.render('not solved', True, RED_COLOR)
             if bad_state:
                 text_solved = font.render('BAD', True, RED_COLOR)
-            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y4))
+            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y5))
             screen.blit(text_solved, text_solved_place)
 
             # отрисовка сетки
@@ -623,16 +683,10 @@ def main():
                             if TYPE_COLOR == 1:
                                 if pyramid[1]==color[0]: # перед
                                     draw.polygon(screen,color[1], [[x1, y0], [x2, yy], [x3, yy]] )
-                                    draw.aaline(screen, color[1], [x1, y0], [x2, yy])
-                                    draw.aaline(screen, color[1], [x1, y1], [x2, yy])
                                 elif pyramid2[0] == color[0]: # лево
                                     draw.polygon(screen,color[1], [[x1, y0], [x1, y1], [x3, yy]] )
-                                    draw.aaline(screen, color[1], [x1, y0], [x2, yy])
-                                    draw.aaline(screen, color[1], [x1, y1], [x2, yy])
                                 elif pyramid2[1] == color[0]: # право
                                     draw.polygon(screen,color[1], [[x1, y0], [x1, y1], [x2, yy]] )
-                                    draw.aaline(screen, color[1], [x1, y0], [x2, yy])
-                                    draw.aaline(screen, color[1], [x1, y1], [x2, yy])
                             else:
                                 if pyramid[0]==color[0]: # верх
                                     draw.polygon(screen,color[1], [[x1, y10], [xc2, yc2], [x20, yy0], [x1, yc], [x30, yy0], [xc3, yc2]] )
@@ -642,10 +696,9 @@ def main():
                                     draw.polygon(screen, color[1], [[x3, yy], [x30, y11], [xc3, yc2], [x30, yy0], [x1, yc], [x1, yy]])
                                 elif pyramid2[1] == color[0]:  # право
                                     draw.polygon(screen,color[1], [[x2, yy], [x1, yy], [x1, yc], [x20, yy0], [xc2, yc2], [x20, y11]] )
-                                draw.aaline(screen, GRAY_COLOR, [x1, y0], [x1, y1])
-                                draw.aaline(screen, GRAY_COLOR, [x1, y0], [x2, yy])
-                                draw.aaline(screen, GRAY_COLOR, [x1, y0], [x3, yy])
-
+                            draw.aaline(screen, GRAY_COLOR, [x1, y0], [x1, y1])
+                            draw.aaline(screen, GRAY_COLOR, [x1, y0], [x2, yy])
+                            draw.aaline(screen, GRAY_COLOR, [x1, y0], [x3, yy])
                             draw.aaline(screen, GRAY_COLOR, [x1, y1], [x2, yy])
                             draw.aaline(screen, GRAY_COLOR, [x1, y1], [x3, yy])
                             draw.aaline(screen, GRAY_COLOR, [x3, yy], [x2, yy])
