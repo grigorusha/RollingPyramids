@@ -18,7 +18,7 @@ SIZE_X = SIZE_X_START
 SIZE_Y = SIZE_Y_START
 
 BORDER = 5
-PANEL = 33*5
+PANEL = 33*4
 
 TG60 = math.sqrt(3)
 TG30 = TG60/3
@@ -40,7 +40,6 @@ PYRAMID_STATE = [["WB","GR"],["WG","RB"],["WR","BG"],
                  ["RB","WG"],["RW","GB"],["RG","BW"]]
 
 level = []
-TYPE_ORIENT = 1  # 1 - наверх, 2 - налево, 3 - вниз, 4 - направо
 TYPE_COLOR  = 1  # 1 - грани, 2 - углы
 
 BTN_CLICK = False
@@ -72,7 +71,7 @@ def pyram_rotate(pyram,vek, orient):
 
     return pyram_new
 
-def pyram_pos(level, y,x):
+def pyram_find_empty(level, y,x):
     pyram_epty = []
 
     if (y % 2 == 0)==(x % 2 == 0):  # уголок наверх
@@ -125,12 +124,6 @@ def init_level(y,x):
     level[ny][nx] = [" "," "]
 
     return level
-
-def button_Type_click():
-    global TYPE_ORIENT, BTN_CLICK, BTN_CLICK_STR
-    # TYPE_ORIENT = (TYPE_ORIENT+1)%4
-    BTN_CLICK_STR = "type"
-    BTN_CLICK = True
 
 def button_Button_click(button_str):
     global BTN_CLICK, BTN_CLICK_STR
@@ -252,67 +245,62 @@ def main():
         screen.fill(BACKGROUND_COLOR) # Заливаем поверхность сплошным цветом
 
         # инициализация кнопок
-        button_y1 = WIN_HEIGHT + BORDER + 10
-        button_Reset = Button(screen, 10, button_y1, 45, 20, text='Reset', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick = lambda: button_Button_click("reset"))
-        button_Scramble = Button(screen, button_Reset.textRect.right+10, button_y1, 70, 20, text='Scramble', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick = lambda: button_Button_click("scramble"))
-        button_Undo = Button(screen, button_Scramble.textRect.right+10, button_y1, 40, 20, text='Undo', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick = lambda: button_Button_click("undo"))
+        if True:
+            button_y1 = WIN_HEIGHT + BORDER + 10
+            button_Reset = Button(screen, 10, button_y1, 45, 20, text='Reset', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick = lambda: button_Button_click("reset"))
+            button_Scramble = Button(screen, button_Reset.textRect.right+10, button_y1, 70, 20, text='Scramble', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick = lambda: button_Button_click("scramble"))
+            button_Undo = Button(screen, button_Scramble.textRect.right+10, button_y1, 40, 20, text='Undo', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick = lambda: button_Button_click("undo"))
 
-        button_y2 = button_y1 + 30
-        button_Type = Button(screen, 10, button_y2, 60, 20, text='Type: Δ', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Type_click())
-        button_MinusX = Button(screen, button_Type.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Size_click(0,-1))
-        textx = font.render(str(SIZE_X), True, "#008000")
-        textx_place = textx.get_rect(topleft=(button_MinusX.textRect.right+15, button_y2 - 3))
-        button_PlusX =  Button(screen, textx_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Size_click(0,1))
+            button_y2 = button_y1 + 30
+            button_Open = Button(screen, 10, button_y2, 45, 20, text='Open', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Button_click("open"))
+            button_Save = Button(screen, button_Open.textRect.right+10, button_y2, 45, 20, text='Save', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Button_click("save"))
+            button_MinusX = Button(screen, button_Save.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Size_click(0,-1))
+            textx = font.render(str(SIZE_X), True, "#008000")
+            textx_place = textx.get_rect(topleft=(button_MinusX.textRect.right+15, button_y2 - 3))
+            button_PlusX =  Button(screen, textx_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Size_click(0,1))
 
-        button_MinusY = Button(screen, button_PlusX.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Size_click(-1,0))
-        texty = font.render(str(SIZE_Y), True, "#008000")
-        texty_place = texty.get_rect(topleft=(button_MinusY.textRect.right+15, button_y2 - 3))
-        button_PlusY = Button(screen, texty_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Size_click(1,0))
+            button_MinusY = Button(screen, button_PlusX.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Size_click(-1,0))
+            texty = font.render(str(SIZE_Y), True, "#008000")
+            texty_place = texty.get_rect(topleft=(button_MinusY.textRect.right+15, button_y2 - 3))
+            button_PlusY = Button(screen, texty_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Size_click(1,0))
 
-        button_y3 = button_y2 + 30
-        button_Color = Button(screen, 10, button_y3, 65, 20, text='Color: Δ', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Button_click("color"))
-        button_Edit = Button(screen, button_Color.textRect.right+15, button_y3, 50, 20, text='Edit', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Edit_click(0))
-        button_EditPyr = Button(screen, button_Edit.textRect.right+25, button_y3, 20, 20, text='Δ', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Edit_click(1))
-        button_EditBlk = Button(screen, button_EditPyr.textRect.right+7, button_y3, 20, 20, text='*', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Edit_click(2))
-        button_EditEmp = Button(screen, button_EditBlk.textRect.right+10, button_y3, 20, 20, text='x', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Edit_click(3))
+            button_y3 = button_y2 + 30
+            button_Color = Button(screen, 10, button_y3, 65, 20, text='Color: Δ', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Button_click("color"))
+            button_Edit = Button(screen, button_Color.textRect.right+15, button_y3, 50, 20, text='Edit', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Edit_click(0))
+            button_EditPyr = Button(screen, button_Edit.textRect.right+25, button_y3, 20, 20, text='Δ', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Edit_click(1))
+            button_EditBlk = Button(screen, button_EditPyr.textRect.right+7, button_y3, 20, 20, text='*', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Edit_click(2))
+            button_EditEmp = Button(screen, button_EditBlk.textRect.right+10, button_y3, 20, 20, text='x', fontSize=20, margin=5, radius=3,
+                            inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Edit_click(3))
 
-        button_y4 = button_y3 + 30
-        button_Open = Button(screen, 10, button_y4, 45, 20, text='Open', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Button_click("open"))
-        button_Save = Button(screen, button_Open.textRect.right+10, button_y4, 45, 20, text='Save', fontSize=20, margin=5, radius=3,
-                        inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
-                        onClick=lambda: button_Button_click("save"))
-
-
-        button_y5 = button_y4 + 30
-        button_set = [button_Reset, button_Scramble, button_Undo, button_Type, button_Color, button_Edit, button_Open, button_Save,
+            button_y4 = button_y3 + 30
+        button_set = [button_Reset, button_Scramble, button_Undo, button_Color, button_Edit, button_Open, button_Save,
                       button_MinusX, button_PlusX, button_MinusY, button_PlusY, button_EditPyr, button_EditBlk, button_EditEmp]
 
         ################################################################################
@@ -354,7 +342,7 @@ def main():
                     if BTN_CLICK_STR=="save":
                         fl_break = False
                         save_file(level)
-                    if BTN_CLICK_STR=="scramble":
+                    if BTN_CLICK_STR=="scramble" and not edit_mode:
                         fl_break = False
                         scramble_move = SIZE_X * SIZE_Y * 500
                     if BTN_CLICK_STR=="undo":
@@ -373,57 +361,38 @@ def main():
                     elif BTN_CLICK_STR=="plusy":
                         pos = pygame.mouse.get_pos()
                         pygame.mouse.set_pos(pos[0], pos[1] + HEIGHT_PYRAMID)
+
                     elif BTN_CLICK_STR == "edit":
                         fl_break = False
                         edit_mode = not edit_mode
                         if edit_mode:
                             BTN_CLICK_STR = "editpyr"
-                            button_Edit.inactiveColour = "#0000F0"
-                            button_Edit.hoverColour = "#0000F0"
+                            button_Edit.inactiveColour = button_Edit.hoverColour = "#0000F0"
                         else:
                             edit_mode_str = ""
-                            button_Edit.inactiveColour = "#008000"
-                            button_Edit.hoverColour = "#008000"
-                            button_EditPyr.inactiveColour = "#008000"
-                            button_EditPyr.hoverColour = "#008000"
-                            button_EditBlk.inactiveColour = "#008000"
-                            button_EditBlk.hoverColour = "#008000"
-                            button_EditEmp.inactiveColour = "#008000"
-                            button_EditEmp.hoverColour = "#008000"
-
+                            button_Edit.inactiveColour = button_Edit.hoverColour = button_EditPyr.inactiveColour = button_EditPyr.hoverColour = "#008000"
+                            button_EditBlk.inactiveColour = button_EditBlk.hoverColour = button_EditEmp.inactiveColour = button_EditEmp.hoverColour = "#008000"
                     if BTN_CLICK_STR == "editpyr":
                         fl_break = False
                         if edit_mode:
                             if edit_mode_str != "pyram":
                                 edit_mode_str = "pyram"
-                                button_EditPyr.inactiveColour = "#0000F0"
-                                button_EditPyr.hoverColour = "#0000F0"
-                                button_EditBlk.inactiveColour = "#008000"
-                                button_EditBlk.hoverColour = "#008000"
-                                button_EditEmp.inactiveColour = "#008000"
-                                button_EditEmp.hoverColour = "#008000"
+                                button_EditPyr.inactiveColour = button_EditPyr.hoverColour = "#0000F0"
+                                button_EditBlk.inactiveColour = button_EditBlk.hoverColour = button_EditEmp.inactiveColour = button_EditEmp.hoverColour = "#008000"
                     elif BTN_CLICK_STR == "editblk":
                         fl_break = False
                         if edit_mode:
                             if edit_mode_str != "block":
                                 edit_mode_str = "block"
-                                button_EditBlk.inactiveColour = "#0000F0"
-                                button_EditBlk.hoverColour = "#0000F0"
-                                button_EditPyr.inactiveColour = "#008000"
-                                button_EditPyr.hoverColour = "#008000"
-                                button_EditEmp.inactiveColour = "#008000"
-                                button_EditEmp.hoverColour = "#008000"
+                                button_EditBlk.inactiveColour = button_EditBlk.hoverColour = "#0000F0"
+                                button_EditPyr.inactiveColour = button_EditPyr.hoverColour = button_EditEmp.inactiveColour = button_EditEmp.hoverColour = "#008000"
                     elif BTN_CLICK_STR == "editemp":
                         fl_break = False
                         if edit_mode:
                             if edit_mode_str != "empty":
                                 edit_mode_str = "empty"
-                                button_EditEmp.inactiveColour = "#0000F0"
-                                button_EditEmp.hoverColour = "#0000F0"
-                                button_EditPyr.inactiveColour = "#008000"
-                                button_EditPyr.hoverColour = "#008000"
-                                button_EditBlk.inactiveColour = "#008000"
-                                button_EditBlk.hoverColour = "#008000"
+                                button_EditEmp.inactiveColour = button_EditEmp.hoverColour = "#0000F0"
+                                button_EditPyr.inactiveColour = button_EditPyr.hoverColour = button_EditBlk.inactiveColour = button_EditBlk.hoverColour = "#008000"
 
                     if edit_mode:
                         moves_stack = []
@@ -452,7 +421,7 @@ def main():
 
                         pyramid = level[pyramid_pos_y][pyramid_pos_x]
                         if (pyramid[0] != " ") and (pyramid[0] != "X"):
-                            pyram_empty = pyram_pos(level, pyramid_pos_y, pyramid_pos_x)
+                            pyram_empty = pyram_find_empty(level, pyramid_pos_y, pyramid_pos_x)
                             if len(pyram_empty)>0:
                                 vek = random.randint(1,4)
                                 break
@@ -527,7 +496,7 @@ def main():
             if not edit_mode and (pyramid_pos_x>=0) and (pyramid_pos_y>=0):
                 pyram = level[pyramid_pos_y][pyramid_pos_x]
                 if (pyram[0] != "X")and(pyram[0] != " "):
-                    pyram_empty = pyram_pos(level, pyramid_pos_y, pyramid_pos_x)
+                    pyram_empty = pyram_find_empty(level, pyramid_pos_y, pyramid_pos_x)
                     if len(pyram_empty) > 0:
                         if len(pyram_empty)==1:
                             pos = 0
@@ -570,7 +539,7 @@ def main():
             ################################################################################
             # text
             text_moves = font.render('Moves: ' + str(moves), True, PYRAMID_COLOR[2][1])
-            text_moves_place = text_moves.get_rect(topleft=(10, button_y5))
+            text_moves_place = text_moves.get_rect(topleft=(10, button_y4))
             screen.blit(text_moves, text_moves_place)
             if solved:
                 text_solved = font.render('Solved', True, PYRAMID_COLOR[0][1])
@@ -578,32 +547,42 @@ def main():
                 text_solved = font.render('not solved', True, RED_COLOR)
             if bad_state:
                 text_solved = font.render('BAD', True, RED_COLOR)
-            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y5))
+            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y4))
             screen.blit(text_solved, text_solved_place)
 
+            ############################################
             # отрисовка сетки
-            if (TYPE_ORIENT==1):
-                for ny in range(SIZE_Y+1):
-                    if ny % 2 == 0:
-                        x1 = int(EDGE_PYRAMID / 2) + BORDER
-                        x2 = int(x1 + (SIZE_X // 2) * EDGE_PYRAMID)
-                        x0 = BORDER
-                    else:
-                        x1 = BORDER
-                        x2 = int(x1+(SIZE_X//2+SIZE_X%2)*EDGE_PYRAMID)
-                        x0 = int(EDGE_PYRAMID / 2) + BORDER
-                    y1 = ny * HEIGHT_PYRAMID + BORDER
-                    draw.line(screen, GRAY_COLOR, (x1, y1), (x2, y1), 3)
+            for ny,row in enumerate(level):
+                for nx,pyramid in enumerate(row):
+                    orient = (ny % 2 == 0) == (nx % 2 == 0) # уголок вверх
+                    ############################################
+                    # расчет всех координат
+                    if orient: # уголок вверх
+                        fl_or = 1
+                        if (ny % 2 == 0) and (nx % 2 == 0):  # 1 ряд, наверх
+                            x1 = int(EDGE_PYRAMID / 2) + (nx // 2) * EDGE_PYRAMID + BORDER
+                        elif (ny % 2 == 1) and (nx % 2 == 1):  # 2 ряд, наверх
+                            x1 = (nx // 2 + nx % 2) * EDGE_PYRAMID + BORDER
+                        y1 = ny * HEIGHT_PYRAMID + BORDER
+                        yy = y1 + HEIGHT_PYRAMID
+                        x2  = x1 + int(EDGE_PYRAMID / 2)
+                        x3  = x1 - int(EDGE_PYRAMID / 2)
+                    else:  # уголок вниз
+                        fl_or = -1
+                        if (ny % 2 == 0) and (nx % 2 == 1):  # 1 ряд, вниз
+                            x1 = (nx // 2 + nx % 2) * EDGE_PYRAMID + BORDER
+                        elif (ny % 2 == 1) and (nx % 2 == 0):  # 2 ряд, вниз
+                            x1 = int(EDGE_PYRAMID / 2) + (nx // 2) * EDGE_PYRAMID + BORDER
+                        yy = ny * HEIGHT_PYRAMID + BORDER
+                        y1 = yy + HEIGHT_PYRAMID
+                        x2  = x1 - int(EDGE_PYRAMID / 2)
+                        x3  = x1 + int(EDGE_PYRAMID / 2)
 
-                    y2 = (ny + 1) * HEIGHT_PYRAMID + BORDER
-                    if ny<SIZE_Y:
-                        for nn in range(SIZE_X//2+1):
-                            draw.line(screen, GRAY_COLOR, (x1+nn*EDGE_PYRAMID, y1), (x0+nn*EDGE_PYRAMID, y2), 3)
-                        for nn in range(SIZE_X//2+SIZE_X%2):
-                            if ny % 2 == 0:
-                                draw.line(screen, GRAY_COLOR, (x1+nn*EDGE_PYRAMID, y1), (x0+(nn+1)*EDGE_PYRAMID, y2), 3)
-                            else:
-                                draw.line(screen, GRAY_COLOR, (x1+(nn+1)*EDGE_PYRAMID, y1), (x0+nn*EDGE_PYRAMID, y2), 3)
+                    # отрисовка
+                    if pyramid[0]!="X":
+                        draw.line(screen, GRAY_COLOR2, [x2, yy], [x3, yy], 2)
+                        draw.line(screen, GRAY_COLOR2, [x1, y1], [x2, yy], 2)
+                        draw.line(screen, GRAY_COLOR2, [x1, y1], [x3, yy], 2)
 
             ############################################
             # отрисовка пирамидок
@@ -616,63 +595,48 @@ def main():
                     ############################################
                     # расчет всех координат
                     if orient: # уголок вверх
+                        fl_or = 1
                         if (ny % 2 == 0) and (nx % 2 == 0):  # 1 ряд, наверх
                             x1 = int(EDGE_PYRAMID / 2) + (nx // 2) * EDGE_PYRAMID + BORDER
                         elif (ny % 2 == 1) and (nx % 2 == 1):  # 2 ряд, наверх
                             x1 = (nx // 2 + nx % 2) * EDGE_PYRAMID + BORDER
-                        x2 = x1 + int(EDGE_PYRAMIDka / 2)
-                        x3 = x1 - int(EDGE_PYRAMIDka / 2)
                         y1 = ny * HEIGHT_PYRAMID + BORDER + (2 * BORDER)
                         yy = y1 + HEIGHT_PYRAMIDka
-                        y0 = y1 + int(2 * HEIGHT_PYRAMIDka / 3)
-
-                        y10 = y1 + int(HEIGHT_PYRAMIDka / 3)
-                        x20 = x1 + int(EDGE_PYRAMIDka / 4)
-                        x30 = x1 - int(EDGE_PYRAMIDka / 4)
-                        yy0 = y1 + int(5 * HEIGHT_PYRAMIDka / 6)
-                        y11 = y1 + int(HEIGHT_PYRAMIDka / 2)
-
-                        yc = y1 + int(8 * HEIGHT_PYRAMIDka / 9)
-                        xc2 = x1 + int(EDGE_PYRAMIDka / 6)
-                        xc3 = x1 - int(EDGE_PYRAMIDka / 6)
-                        yc2 = y1 + int(5 * HEIGHT_PYRAMIDka / 9)
-                    else: # уголок вниз
+                    else:  # уголок вниз
+                        fl_or = -1
                         if (ny % 2 == 0) and (nx % 2 == 1):  # 1 ряд, вниз
                             x1 = (nx // 2 + nx % 2) * EDGE_PYRAMID + BORDER
                         elif (ny % 2 == 1) and (nx % 2 == 0):  # 2 ряд, вниз
                             x1 = int(EDGE_PYRAMID / 2) + (nx // 2) * EDGE_PYRAMID + BORDER
-                        x2 = x1 - int(EDGE_PYRAMIDka / 2)
-                        x3 = x1 + int(EDGE_PYRAMIDka / 2)
                         yy = ny * HEIGHT_PYRAMID + BORDER + (BORDER)
                         y1 = yy + HEIGHT_PYRAMIDka
-                        y0 = y1 - int(2 * HEIGHT_PYRAMIDka / 3)
 
-                        y10 = y1 - int(HEIGHT_PYRAMIDka / 3)
-                        x20 = x1 - int(EDGE_PYRAMIDka / 4)
-                        x30 = x1 + int(EDGE_PYRAMIDka / 4)
-                        yy0 = y1 - int(5 * HEIGHT_PYRAMIDka / 6)
-                        y11 = y1 - int(HEIGHT_PYRAMIDka / 2)
+                    x2  = x1 + int(EDGE_PYRAMIDka / 2) * fl_or
+                    x3  = x1 - int(EDGE_PYRAMIDka / 2) * fl_or
+                    y0  = y1 + int(2 * HEIGHT_PYRAMIDka / 3) * fl_or
 
-                        yc = y1 - int(8 * HEIGHT_PYRAMIDka / 9)
-                        xc2 = x1 - int(EDGE_PYRAMIDka / 6)
-                        xc3 = x1 + int(EDGE_PYRAMIDka / 6)
-                        yc2 = y1 - int(5 * HEIGHT_PYRAMIDka / 9)
+                    y10 = y1 + int(HEIGHT_PYRAMIDka / 3) * fl_or
+                    x20 = x1 + int(EDGE_PYRAMIDka / 4) * fl_or
+                    x30 = x1 - int(EDGE_PYRAMIDka / 4) * fl_or
+                    yy0 = y1 + int(5 * HEIGHT_PYRAMIDka / 6) * fl_or
+                    y11 = y1 + int(HEIGHT_PYRAMIDka / 2) * fl_or
+
+                    yc  = y1 + int(8 * HEIGHT_PYRAMIDka / 9) * fl_or
+                    xc2 = x1 + int(EDGE_PYRAMIDka / 6) * fl_or
+                    xc3 = x1 - int(EDGE_PYRAMIDka / 6) * fl_or
+                    yc2 = y1 + int(5 * HEIGHT_PYRAMIDka / 9) * fl_or
 
                     ############################################
                     # сама отрисовка
 
                     if pyramid[0]==" ": # пустая ячейка
                         draw.polygon(screen, BACKGROUND_COLOR, [[x1, y1], [x2, yy], [x3, yy]])
-                    elif pyramid[0]=="X": # блок
-                        draw.polygon(screen,GRAY_COLOR2, [[x1, y1], [x2, yy], [x3, yy]] )
-                        draw.aaline(screen, GRAY_COLOR2, [x1, y1], [x2, yy])
-                        draw.aaline(screen, GRAY_COLOR2, [x1, y1], [x3, yy])
-
-                        delta = int(HEIGHT_PYRAMIDka/5)
-                        delta2 = int(delta*TG60/2)
-                        draw.line(screen, GRAY_COLOR, [x1, y0-delta], [x1, y0+delta],3)
-                        draw.line(screen, GRAY_COLOR, [x1-delta2, y0-delta/2], [x1+delta2, y0+delta/2],3)
-                        draw.line(screen, GRAY_COLOR, [x1-delta2, y0+delta/2], [x1+delta2, y0-delta/2],3)
+                    elif pyramid[0] == "X":  # блок
+                        delta = int(HEIGHT_PYRAMIDka / 5)
+                        delta2 = int(delta * TG60 / 2)
+                        draw.line(screen, GRAY_COLOR, [x1, y0 - delta], [x1, y0 + delta], 3)
+                        draw.line(screen, GRAY_COLOR, [x1 - delta2, y0 - delta / 2], [x1 + delta2, y0 + delta / 2], 3)
+                        draw.line(screen, GRAY_COLOR, [x1 - delta2, y0 + delta / 2], [x1 + delta2, y0 - delta / 2], 3)
 
                     else: # пирамидка
                         if (pyramid[0]!="W")or(pyramid[1]!="B"):
@@ -713,27 +677,3 @@ def main():
 
 main()
 
-"""
-elif (TYPE_ORIENT == 3):
-    for ny in range(SIZE_Y + 1):
-        if ny % 2 == 0:
-            x1 = BORDER
-            x2 = int(x1 + (SIZE_X // 2 + SIZE_X % 2) * EDGE_PYRAMID)
-            x0 = int(EDGE_PYRAMID / 2) + BORDER
-        else:
-            x1 = int(EDGE_PYRAMID / 2) + BORDER
-            x2 = int(x1 + (SIZE_X // 2) * EDGE_PYRAMID)
-            x0 = BORDER
-        y1 = ny * HEIGHT_PYRAMID + BORDER
-        draw.line(screen, GRAY_COLOR, (x1, y1), (x2, y1), 3)
-
-        y2 = (ny + 1) * HEIGHT_PYRAMID + BORDER
-        if ny<SIZE_Y:
-            for nn in range(1+SIZE_X//2):
-                draw.line(screen, GRAY_COLOR, (x1+nn*EDGE_PYRAMID, y1), (x0+nn*EDGE_PYRAMID, y2), 3)
-            for nn in range(SIZE_X // 2 + SIZE_X % 2):
-                if ny % 2 == 0:
-                    draw.line(screen, GRAY_COLOR, (x1 + (nn + 1) * EDGE_PYRAMID, y1), (x0 + nn * EDGE_PYRAMID, y2), 3)
-                else:
-                    draw.line(screen, GRAY_COLOR, (x1+nn*EDGE_PYRAMID, y1), (x0+(nn+1)*EDGE_PYRAMID, y2), 3)
-"""
