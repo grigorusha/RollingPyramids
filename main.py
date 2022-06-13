@@ -169,13 +169,17 @@ def read_file():
     if filename=="":
         return ""
 
-    x = y = 0
+    x = y = type = 0
     level = []
     with open(filename,'r') as f:
         lines = f.readlines()
-        for str in lines:
-            str_mas = []
+        for nom,str in enumerate(lines):
             str = str.replace('\n','')
+            if nom == 0:
+                type = int(str)
+                continue
+
+            str_mas = []
             while len(str)>=2:
                 sim1 = str[0]
                 sim2 = str[1]
@@ -184,9 +188,9 @@ def read_file():
             level.append(str_mas)
             y += 1
             x = max(x,len(str_mas))
-    return level, y, x
+    return level, y, x, type
 
-def save_file(level):
+def save_file(level,type):
     dir = os.path.abspath(os.curdir)
     filetypes = (("Text file", "*.txt"),("Any file", "*"))
     filename = fd.asksaveasfile("w", title="Save Level as...", initialdir=dir,filetypes=filetypes)
@@ -194,9 +198,10 @@ def save_file(level):
         return ""
 
     with open(filename.name, 'w') as f:
-        for str in level:
+        f.write(str(type) + "\n")
+        for string in level:
             line = ""
-            for pyr in str:
+            for pyr in string:
                 line += pyr[0]+pyr[1]+" "
             f.write(line+"\n")
 
@@ -339,14 +344,15 @@ def main():
                     if BTN_CLICK_STR=="reset":
                         fl_break = True
                     if BTN_CLICK_STR=="open":
-                        fl_break = True
+                        fl_break = False
                         fil = read_file()
                         if fil != "":
-                            level, SIZE_Y, SIZE_X = fil
+                            fl_break = True
+                            level, SIZE_Y, SIZE_X, TYPE_COLOR = fil
                             file_ext = True
                     if BTN_CLICK_STR=="save":
                         fl_break = False
-                        save_file(level)
+                        save_file(level,TYPE_COLOR)
                     if BTN_CLICK_STR=="scramble" and not edit_mode:
                         fl_break = False
                         scramble_move = SIZE_X * SIZE_Y * 500
