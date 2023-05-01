@@ -217,14 +217,13 @@ def main():
     random.seed()
     pygame.init()  # Инициация PyGame
     font = pygame.font.SysFont('Verdana', 18)
+    font_button = pygame.font.SysFont("ArialB",18)
     timer = pygame.time.Clock()
     Tk().withdraw()
 
-    # dir = os.path.abspath(os.curdir)
-    # dir = os.path.abspath(__file__)
-    # dir = os.path.abspath(os.getcwd())
-    # icon = pygame.image.load(dir + '\RollingPyramids.ico')
-    # pygame.display.set_icon(icon)
+    icon = os.path.abspath(os.curdir) + "\\RollingPyramids.ico"
+    if os.path.isfile(icon):
+        pygame.display.set_icon(pygame.image.load(icon))
 
     ################################################################################
     ################################################################################
@@ -257,55 +256,55 @@ def main():
         # инициализация кнопок
         if True:
             button_y1 = WIN_HEIGHT + BORDER + 10
-            button_Reset = Button(screen, 10, button_y1, 45, 20, text='Reset', fontSize=20, margin=5, radius=3,
+            button_Reset = Button(screen, 10, button_y1, 45, 20, text='Reset', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick = lambda: button_Button_click("reset"))
-            button_Scramble = Button(screen, button_Reset.textRect.right+10, button_y1, 70, 20, text='Scramble', fontSize=20, margin=5, radius=3,
+            button_Scramble = Button(screen, button_Reset.textRect.right+10, button_y1, 70, 20, text='Scramble', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick = lambda: button_Button_click("scramble"))
-            button_Undo = Button(screen, button_Scramble.textRect.right+10, button_y1, 40, 20, text='Undo', fontSize=20, margin=5, radius=3,
+            button_Undo = Button(screen, button_Scramble.textRect.right+10, button_y1, 40, 20, text='Undo', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick = lambda: button_Button_click("undo"))
 
             button_y2 = button_y1 + 30
-            button_Open = Button(screen, 10, button_y2, 45, 20, text='Open', fontSize=20, margin=5, radius=3,
+            button_Open = Button(screen, 10, button_y2, 45, 20, text='Open', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Button_click("open"))
-            button_Save = Button(screen, button_Open.textRect.right+10, button_y2, 45, 20, text='Save', fontSize=20, margin=5, radius=3,
+            button_Save = Button(screen, button_Open.textRect.right+10, button_y2, 45, 20, text='Save', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Button_click("save"))
-            button_MinusX = Button(screen, button_Save.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
+            button_MinusX = Button(screen, button_Save.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Size_click(0,-1))
             textx = font.render(str(SIZE_X), True, "#008000")
             textx_place = textx.get_rect(topleft=(button_MinusX.textRect.right+15, button_y2 - 3))
-            button_PlusX =  Button(screen, textx_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
+            button_PlusX =  Button(screen, textx_place.right+7, button_y2, 20, 20, text='+', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Size_click(0,1))
 
-            button_MinusY = Button(screen, button_PlusX.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, margin=5, radius=3,
+            button_MinusY = Button(screen, button_PlusX.textRect.right+15, button_y2, 20, 20, text='-', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Size_click(-1,0))
             texty = font.render(str(SIZE_Y), True, "#008000")
             texty_place = texty.get_rect(topleft=(button_MinusY.textRect.right+15, button_y2 - 3))
-            button_PlusY = Button(screen, texty_place.right+7, button_y2, 20, 20, text='+', fontSize=20, margin=5, radius=3,
+            button_PlusY = Button(screen, texty_place.right+7, button_y2, 20, 20, text='+', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Size_click(1,0))
 
             button_y3 = button_y2 + 30
-            button_Color = Button(screen, 10, button_y3, 65, 20, text='Color: Δ', fontSize=20, margin=5, radius=3,
+            button_Color = Button(screen, 10, button_y3, 65, 20, text='Color: Δ', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Button_click("color"))
-            button_Edit = Button(screen, button_Color.textRect.right+15, button_y3, 50, 20, text='Edit', fontSize=20, margin=5, radius=3,
+            button_Edit = Button(screen, button_Color.textRect.right+15, button_y3, 50, 20, text='Edit', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Edit_click(0))
-            button_EditPyr = Button(screen, button_Edit.textRect.right+25, button_y3, 20, 20, text='Δ', fontSize=20, margin=5, radius=3,
+            button_EditPyr = Button(screen, button_Edit.textRect.right+25, button_y3, 20, 20, text='Δ', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Edit_click(1))
-            button_EditBlk = Button(screen, button_EditPyr.textRect.right+7, button_y3, 20, 20, text='*', fontSize=20, margin=5, radius=3,
+            button_EditBlk = Button(screen, button_EditPyr.textRect.right+7, button_y3, 20, 20, text='*', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Edit_click(2))
-            button_EditEmp = Button(screen, button_EditBlk.textRect.right+10, button_y3, 20, 20, text='x', fontSize=20, margin=5, radius=3,
+            button_EditEmp = Button(screen, button_EditBlk.textRect.right+10, button_y3, 20, 20, text='x', fontSize=20, font=font_button, margin=5, radius=3,
                             inactiveColour="#008000", hoverColour="#008000", pressedColour=(0, 200, 20),
                             onClick=lambda: button_Edit_click(3))
 
