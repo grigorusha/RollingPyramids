@@ -12,7 +12,7 @@ You can change the size of the board, edit the position of pyramids and blocks.
 
 ## How to play
 ### Mouse
-- **Mouse click** - rotate cube
+- **Mouse click** - rotate pyramids
 - **Mouse Wheel** - go back one step
 ### Programm button
 - **Reset** - reset the puzzle to its initial state.
