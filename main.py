@@ -8,6 +8,7 @@ import random
 import math
 import copy
 
+import webbrowser
 from tkinter import Tk
 from tkinter import filedialog as fd
 import os
@@ -19,7 +20,7 @@ SIZE_X = SIZE_X_START
 SIZE_Y = SIZE_Y_START
 
 BORDER = 5
-PANEL = 33*4
+PANEL = 33*5
 
 TG60 = math.sqrt(3)
 TG30 = TG60/3
@@ -42,7 +43,7 @@ PYRAMID_STATE = [["WB","GR"],["WG","RB"],["WR","BG"],
 
 level = []
 solved_level = []
-TYPE_COLOR  = 1  # 1 - грани, 2 - углы
+TYPE_COLOR  = 2  # 1 - грани, 2 - углы
 
 BTN_CLICK = False
 BTN_CLICK_STR = ""
@@ -309,8 +310,16 @@ def main():
                             onClick=lambda: button_Edit_click(3))
 
             button_y4 = button_y3 + 30
+            button_Info = Button(screen, 10, button_y4, 95, 20, text='Puzzle Photo ->', fontSize=20, font=font_button, margin=5, radius=3,
+                            inactiveColour="#0000FF", hoverColour="#0000FF", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Button_click("info"))
+            button_About = Button(screen, button_Info.textRect.right+10, button_y4, 60, 20, text='About ->', fontSize=20, font=font_button, margin=5, radius=3,
+                            inactiveColour="#0000FF", hoverColour="#0000FF", pressedColour=(0, 200, 20),
+                            onClick=lambda: button_Button_click("about"))
+
+            button_y5 = button_y4 + 30
         button_set = [button_Reset, button_Scramble, button_Undo, button_Color, button_Edit, button_Open, button_Save,
-                      button_MinusX, button_PlusX, button_MinusY, button_PlusY, button_EditPyr, button_EditBlk, button_EditEmp]
+                      button_MinusX, button_PlusX, button_MinusY, button_PlusY, button_EditPyr, button_EditBlk, button_EditEmp, button_Info, button_About]
 
         ################################################################################
         ################################################################################
@@ -327,7 +336,7 @@ def main():
 
                 events = pygame.event.get()
                 for ev in events:  # Обрабатываем события
-                    if (ev.type == QUIT) or (ev.type == KEYDOWN and ev.key == K_ESCAPE):
+                    if (ev.type == QUIT):
                         return SystemExit, "QUIT"
                     if ev.type == MOUSEBUTTONDOWN and ev.button == 1:
                         mouse_x = ev.pos[0]
@@ -362,6 +371,17 @@ def main():
                             vek = (vek + 1) % 4 + 1
                             moves -= 1
                             undo = True
+
+                    if BTN_CLICK_STR=="info":
+                        webbrowser.open("https://twistypuzzles.com/forum/viewtopic.php?p=414460#p414460", new=2, autoraise=True)
+                        webbrowser.open("https://twistypuzzles.com/app/museum/museum_showitem.php?pkey=9766", new=2, autoraise=True)
+                        webbrowser.open("https://twistypuzzles.com/app/museum/museum_showitem.php?pkey=10961", new=2, autoraise=True)
+
+                    if BTN_CLICK_STR == "about":
+                        webbrowser.open("https://github.com/grigorusha/RollingPyramids", new=2, autoraise=True)
+                        webbrowser.open("https://twistypuzzles.com/forum/viewtopic.php?t=38581", new=2, autoraise=True)
+                        webbrowser.open("https://twistypuzzles.com/forum/viewtopic.php?p=417361#p417361", new=2, autoraise=True)
+
                     if BTN_CLICK_STR=="color":
                         fl_break = True
                         TYPE_COLOR = 3-TYPE_COLOR
@@ -562,7 +582,7 @@ def main():
             ################################################################################
             # text
             text_moves = font.render('Moves: ' + str(moves), True, PYRAMID_COLOR[2][1])
-            text_moves_place = text_moves.get_rect(topleft=(10, button_y4))
+            text_moves_place = text_moves.get_rect(topleft=(10, button_y5))
             screen.blit(text_moves, text_moves_place)
             if solved:
                 text_solved = font.render('Solved', True, PYRAMID_COLOR[0][1])
@@ -570,7 +590,7 @@ def main():
                 text_solved = font.render('not solved', True, RED_COLOR)
             if bad_state:
                 text_solved = font.render('BAD', True, RED_COLOR)
-            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y4))
+            text_solved_place = text_solved.get_rect(topleft=(text_moves_place.right + 10, button_y5))
             screen.blit(text_solved, text_solved_place)
 
             ############################################
